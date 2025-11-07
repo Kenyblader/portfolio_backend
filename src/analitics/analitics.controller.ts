@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { AnaliticsService } from './analitics.service';
 import { CreateAnaliticDto } from './dto/create-analitic.dto';
 import { UpdateAnaliticDto } from './dto/update-analitic.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('analitics')
 export class AnaliticsController {
@@ -12,11 +13,13 @@ export class AnaliticsController {
     return this.analiticsService.create(createAnaliticDto);
   }
 
+  @UseGuards(AuthGuard)
   @Post('/viewer')
   addViewer(){
     return this.analiticsService.addViewer();
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   async findAll() {
     const analitics= await this.analiticsService.findAll();
