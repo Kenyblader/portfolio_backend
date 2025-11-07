@@ -1,6 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Profile } from 'src/models/profile';
 import { User } from 'src/models/user';
+
+
 
 @Injectable()
 export class AuthService {
@@ -15,15 +18,19 @@ export class AuthService {
     }
     constructor(
         @Inject('USER_REPOSITORY') private userRepository: typeof User,
+        private jwtService:JwtService
     ) {}
 
-    async login(username: string, password: string): Promise<Omit<User,'password'>> {
+    async login(username: string, password: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
             const user = await this.userRepository.findOne({ where: { username } });
         if (user && user.password === password) {
-            resolve(user);
+            const payload={ sub: user.id, username:user.username}
+            const tocken= await this.jwtService.signAsync(payload);
+            resolve(tocken);
         }
-        reject('Invalid credentials');
+        else
+            throw new  UnauthorizedException()
         });
     }
 

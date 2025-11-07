@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, FileTypeValidator, MaxFileSizeValidator, ParseFilePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, FileTypeValidator, MaxFileSizeValidator, ParseFilePipe, UseGuards } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { Project } from 'src/models/project';
 import { FileInterceptor } from '@nestjs/platform-express/multer';
 import { ProjectDto } from 'src/models/project.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('project')
 export class ProjectController {
@@ -10,6 +11,7 @@ export class ProjectController {
 
   @Post()
   @UseInterceptors(FileInterceptor('img'))
+  @UseGuards(AuthGuard)
   create(
     @Body() params,
     @Body('title') title: string,
@@ -43,16 +45,19 @@ export class ProjectController {
     return this.projectService.findAll();
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.projectService.findOne(+id);
   }
-
+  
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectDto: Partial<Project>) {
     return this.projectService.update(+id, updateProjectDto);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectService.remove(id);
