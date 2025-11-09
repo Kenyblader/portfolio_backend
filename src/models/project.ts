@@ -40,5 +40,11 @@ export class Project extends Model {
         allowNull: true,
     })
     declare image?: string;
+    
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    declare imagePublicId?: string;
 
 }

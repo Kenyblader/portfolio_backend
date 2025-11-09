@@ -7,40 +7,35 @@ import { join } from 'path';
 import { Project } from 'src/models/project';
 import { ProjectDto } from 'src/models/project.dto';
 import { ConfigService } from '@nestjs/config';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProjectService {
 
-  private readonly uploadPath = join(process.cwd(), 'uploads', 'projects');
+  // private readonly uploadPath = join(process.cwd(), 'uploads', 'projects');
   
   constructor(
     @Inject('PROJECT_REPOSITORY') private projectRepository: typeof Project,
-    private configService: ConfigService,
+    private cloudinaryService: CloudinaryService
   ) {
-    if (!existsSync(this.uploadPath)) {
-      mkdirSync(this.uploadPath, { recursive: true });
-    }
   }
 
-  getPublicImageURL(localPath: string): string {
-    
-    const baseUrl = process.env.BASE_URL || `https://portfolio-backend-xre2.onrender.com/`;
-    const fileUrl = `${baseUrl}/files/${localPath}`;
-    return fileUrl;
-  }
 
   async create(project: ProjectDto, img?: Express.Multer.File) {
 
     let imgPath:string=''
+    let imgPublicId:string=''
     if (img) {
-      const fileExtension = img.originalname.split('.').pop();
-      const filename = `${uuid()}.${fileExtension}`;
-      const filePath = join(this.uploadPath, filename);
-      await fs.writeFile(filePath, img.buffer);
-      imgPath = `projects/${filename}`;
+      const imgData= await this.cloudinaryService.uplaodFile(img);
+      imgPath= imgData.secure_url;
+      imgPublicId=imgData.public_id;
     }
-    console.log("imgPath",imgPath)
-    const newProject = await this.projectRepository.create({id: uuid(), ...project, image: imgPath==''?null:imgPath});
+    const newProject = await this.projectRepository.create(
+      {id: uuid(),
+        ...project, 
+        image: imgPath==''?null:imgPath,
+        imagePublicId: imgPublicId==''?null:imgPublicId
+      });
     return newProject;
   }
 
@@ -50,7 +45,6 @@ export class ProjectService {
       if (project.image) {
         return {
           ...project.toJSON(),
-          image: this.getPublicImageURL(project.image),
           date: new Date(project.createdAt),
         };
       } else {
@@ -67,7 +61,6 @@ export class ProjectService {
     if (project && project.image) {
       return {
         ...project.toJSON(),
-        image: this.getPublicImageURL(project.image),
         date: new Date(project.createdAt),
       };
     }
@@ -86,9 +79,10 @@ export class ProjectService {
 
   async remove(id: string) : Promise<number> {
     const project = await this.projectRepository.findOne({ where: { id } });
-    if (project && project.image) { 
-      await fs.unlink(join(process.cwd(),'uploads', project.image));
+    if (project && project.imagePublicId) { 
+      await this.cloudinaryService.deleteImage(project.imagePublicId);
     }
+    
     return this.projectRepository.destroy({ where: { id } });
   }
 }

@@ -11,7 +11,7 @@ import { CONSTANTS } from './constant';
       global:true,
       secret: CONSTANTS.jwtKey ,
       signOptions:{
-        expiresIn:'60s'
+        expiresIn:'1200s'
       }
     })
   ],

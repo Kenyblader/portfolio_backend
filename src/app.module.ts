@@ -8,11 +8,12 @@ import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AnaliticsModule } from './analitics/analitics.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [DatabaseModule, ServeStaticModule.forRoot(
     {
-      rootPath: join(process.cwd(), '..', 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/files',
     },
 
@@ -20,7 +21,7 @@ import { AnaliticsModule } from './analitics/analitics.module';
   ConfigModule.forRoot({
     isGlobal:true,
     envFilePath:'.env'
-  }) ,AuthModule, ProjectModule, AnaliticsModule],
+  }) ,AuthModule, ProjectModule, AnaliticsModule, CloudinaryModule],
   controllers: [AppController],
   providers: [AppService],
 })

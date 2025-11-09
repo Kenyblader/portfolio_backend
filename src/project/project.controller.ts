@@ -53,7 +53,7 @@ export class ProjectController {
   
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjectDto: Partial<Project>) {
+  update(@Param('id') id: string, @Body() updateProjectDto: Partial<ProjectDto>) {
     return this.projectService.update(+id, updateProjectDto);
   }
 
