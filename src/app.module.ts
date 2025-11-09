@@ -12,8 +12,8 @@ import { AnaliticsModule } from './analitics/analitics.module';
 @Module({
   imports: [DatabaseModule, ServeStaticModule.forRoot(
     {
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/files/',
+      rootPath: join(process.cwd(), '..', 'uploads'),
+      serveRoot: '/files',
     },
 
   ),
