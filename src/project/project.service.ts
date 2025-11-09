@@ -7,7 +7,6 @@ import { join } from 'path';
 import { Project } from 'src/models/project';
 import { ProjectDto } from 'src/models/project.dto';
 import { ConfigService } from '@nestjs/config';
-import { get } from 'http';
 
 @Injectable()
 export class ProjectService {
@@ -23,15 +22,9 @@ export class ProjectService {
     }
   }
 
-  toBase64(filePath: string): Promise<string> {
-    const imgBuffer = fs.readFile(filePath);
-    const imgBase64 = imgBuffer.then(buffer => buffer.toString('base64'));
-    return imgBase64;
-  }
-
   getPublicImageURL(localPath: string): string {
     
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || `https://portfolio-backend-xre2.onrender.com/`;
     const fileUrl = `${baseUrl}/files/${localPath}`;
     return fileUrl;
   }
