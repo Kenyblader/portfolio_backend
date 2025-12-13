@@ -1,19 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
-import { existsSync, mkdirSync } from 'fs';
 import {v4 as uuid} from 'uuid';
-import { promises as fs } from 'fs';
-import { join } from 'path';
 import { Project } from 'src/models/project';
 import { ProjectDto } from 'src/models/project.dto';
-import { ConfigService } from '@nestjs/config';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryResponse } from 'src/cloudinary/cloudinary/cloudinary-response';
 
 @Injectable()
 export class ProjectService {
 
-  // private readonly uploadPath = join(process.cwd(), 'uploads', 'projects');
-  
   constructor(
     @Inject('PROJECT_REPOSITORY') private projectRepository: typeof Project,
     private cloudinaryService: CloudinaryService
@@ -26,7 +20,7 @@ export class ProjectService {
     let imgPath:string=''
     let imgPublicId:string=''
     if (img) {
-      const imgData= await this.cloudinaryService.uplaodFile(img);
+      const imgData= await this.cloudinaryService.uploadFile(img);
       imgPath= imgData.secure_url;
       imgPublicId=imgData.public_id;
     }
@@ -73,8 +67,27 @@ export class ProjectService {
     throw new Error('Project not found');
   }
 
-  update(id: number, updateProjectDto: Partial<Project>) {
-    return this.projectRepository.update(updateProjectDto, { where: { id } });
+  async update(id: string, updateProjectDto: Partial<Project>, img?: Express.Multer.File) {
+    if(!updateProjectDto || Object.keys(updateProjectDto).length === 0 && !img) {
+      return ;
+    }
+    const project = await this.projectRepository.findOne({ where: { id } });
+
+    if (project) {
+      if (img) {
+        let imgData: CloudinaryResponse;
+        if (project.imagePublicId) {
+          imgData = await this.cloudinaryService.replaceImage(project.imagePublicId, img);
+        } else {
+          imgData = await this.cloudinaryService.uploadFile(img);
+        }
+
+        updateProjectDto.image = imgData.secure_url;
+        updateProjectDto.imagePublicId = imgData.public_id;
+      }
+      return this.projectRepository.update(updateProjectDto, { where: { id } });
+    }
+    throw new Error('Project not found');
   }
 
   async remove(id: string) : Promise<number> {

@@ -13,7 +13,6 @@ export class ProjectController {
   @UseInterceptors(FileInterceptor('img'))
   @UseGuards(AuthGuard)
   create(
-    @Body() params,
     @Body('title') title: string,
     @Body('description') description: string,
     @Body('date') date: Date,
@@ -52,9 +51,16 @@ export class ProjectController {
   }
   
   @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('img'))
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjectDto: Partial<ProjectDto>) {
-    return this.projectService.update(+id, updateProjectDto);
+  update(
+    @Param('id') id: string, 
+    @Body('title') title?: string,
+    @Body('description') description?: string,
+    @Body('github') github?: string,
+    @Body('link') link?: string,
+    @UploadedFile() img?: Express.Multer.File) {
+    return this.projectService.update(id, { title, description, github, link }, img);
   }
 
   @UseGuards(AuthGuard)

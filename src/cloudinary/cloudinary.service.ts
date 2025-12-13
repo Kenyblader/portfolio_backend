@@ -5,7 +5,7 @@ const streamifier= require('streamifier');
 
 @Injectable()
 export class CloudinaryService {
-    async uplaodFile(file: Express.Multer.File): Promise<CloudinaryResponse>
+    async uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse>
     {
         return new Promise((resolve,reject)=>{
             const uploadStream= cloudinary.uploader.upload_stream(
@@ -24,6 +24,14 @@ export class CloudinaryService {
 
             streamifier.createReadStream(file.buffer).pipe(uploadStream);
         });
+    }
+
+    /**
+     * Remplacer une image de Cloudinary
+     */
+    async replaceImage(publicId: string, file: Express.Multer.File): Promise<CloudinaryResponse> {
+        await this.deleteImage(publicId);
+        return this.uploadFile(file);
     }
 
         /**
